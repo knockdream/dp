@@ -32,7 +32,7 @@ static int default_fwd_hook(int bus_num, CAN_FIFOMailBox_TypeDef *to_fwd) {
   // Don't do this for BP/C2, where we have Advanced Actual Relay Technology.
   int bus_fwd = -1;
 
-  if(!board_has_relay()) {
+  if(hw_type == HW_TYPE_WHITE_PANDA || hw_type == HW_TYPE_GREY_PANDA) {
     switch (bus_num) {
       case 0:
         bus_fwd = 2;
