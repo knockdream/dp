@@ -129,3 +129,7 @@ class HardwareBase:
   @abstractmethod
   def get_networks(self):
     pass
+
+  @abstractmethod
+  def led(self, on=False):
+    pass

@@ -309,3 +309,6 @@ class Tici(HardwareBase):
           pass
 
     return r
+
+  def led(self, on=False):
+    pass

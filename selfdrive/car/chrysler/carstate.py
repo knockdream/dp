@@ -67,6 +67,9 @@ class CarState(CarStateBase):
     self.lkas_car_model = cp_cam.vl["LKAS_HUD"]["CAR_MODEL"]
     self.lkas_status_ok = cp_cam.vl["LKAS_HEARTBIT"]["LKAS_STATUS_OK"]
 
+    # dp - brake lights
+    ret.brakeLights = ret.brakePressed
+
     return ret
 
   @staticmethod

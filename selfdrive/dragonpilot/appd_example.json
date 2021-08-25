@@ -1,0 +1,30 @@
+[
+  {
+    "app": "lan.rick.pandagpsservice",
+    "apk": "/sdcard/appd/lan.rick.pandagpsservice.apk",
+    "offroad_cmd": [
+      "LD_LIBRARY_PATH= appops set lan.rick.pandagpsservice android:mock_location deny",
+      "pm disable lan.rick.pandagpsservice"
+    ],
+    "onroad_cmd": [
+      "pm enable lan.rick.pandagpsservice",
+      "LD_LIBRARY_PATH= appops set lan.rick.pandagpsservice android:mock_location allow",
+      "am startservice lan.rick.pandagpsservice/lan.rick.pandagpsservice.MainService"
+    ]
+  },
+  {
+    "app": "com.tomtom.speedcams.android.map",
+    "apk": "/sdcard/appd/com.tomtom.speedcams.android.map.apk",
+    "offroad_cmd": [
+      "pm disable com.tomtom.speedcams.android.map"
+    ],
+    "onroad_cmd": [
+      "pm enable com.tomtom.speedcams.android.map",
+      "LD_LIBRARY_PATH= appops set com.tomtom.speedcams.android.map android.permission.ACCESS_FINE_LOCATION allow",
+      "LD_LIBRARY_PATH= appops set com.tomtom.speedcams.android.map android.permission.ACCESS_COARSE_LOCATION allow",
+      "LD_LIBRARY_PATH= appops set com.tomtom.speedcams.android.map android.permission.READ_EXTERNAL_STORAGE allow",
+      "LD_LIBRARY_PATH= appops set com.tomtom.speedcams.android.map android.permission.WRITE_EXTERNAL_STORAGE allow",
+      "am start -n com.tomtom.speedcams.android.map/com.tomtom.speedcams.android.activities.SpeedCamActivity"
+    ]
+  }
+]

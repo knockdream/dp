@@ -26,3 +26,5 @@ cdef extern from "selfdrive/common/params.h":
     int putBool(string, bool) nogil
     bool checkKey(string) nogil
     void clearAll(ParamKeyType)
+
+    string get_params_path()

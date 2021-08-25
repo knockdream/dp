@@ -72,6 +72,9 @@ class CarState(CarStateBase):
     ret.cruiseState.enabled = self.pcm_acc_status != AccState.OFF
     ret.cruiseState.standstill = self.pcm_acc_status == AccState.STANDSTILL
 
+    # dp - brake lights
+    ret.brakeLights = ret.brakePressed
+
     return ret
 
   @staticmethod

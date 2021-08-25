@@ -89,6 +89,9 @@ class CarState(CarStateBase):
     # Messages needed by carcontroller
     self.msg_stw_actn_req = copy.copy(cp.vl["STW_ACTN_RQ"])
 
+    # dp - brake lights
+    ret.brakeLights = ret.brakePressed
+
     return ret
 
   @staticmethod

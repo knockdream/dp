@@ -44,6 +44,8 @@ class CarState(CarStateBase):
       50, cp.vl["CGW1"]["CF_Gway_TurnSigLh"], cp.vl["CGW1"]["CF_Gway_TurnSigRh"])
     ret.steeringTorque = cp.vl["MDPS12"]["CR_Mdps_StrColTq"]
     ret.steeringTorqueEps = cp.vl["MDPS12"]["CR_Mdps_OutTq"]
+    #dp
+    ret.engineRPM = cp.vl["TCU_DCT13"]['Cluster_Engine_RPM']
     ret.steeringPressed = abs(ret.steeringTorque) > STEER_THRESHOLD
     ret.steerWarning = cp.vl["MDPS12"]["CF_Mdps_ToiUnavail"] != 0 or cp.vl["MDPS12"]["CF_Mdps_ToiFlt"] != 0
 
@@ -112,6 +114,9 @@ class CarState(CarStateBase):
     self.prev_cruise_buttons = self.cruise_buttons
     self.cruise_buttons = cp.vl["CLU11"]["CF_Clu_CruiseSwState"]
 
+    # dp - brake lights
+    ret.brakeLights = ret.brakePressed
+
     return ret
 
   @staticmethod
@@ -174,6 +179,8 @@ class CarState(CarStateBase):
       ("SCCInfoDisplay", "SCC11", 0),
       ("ACC_ObjDist", "SCC11", 0),
       ("ACCMode", "SCC12", 1),
+      #dp
+      ("Cluster_Engine_RPM", "TCU_DCT13", 0),
     ]
 
     checks = [
@@ -188,6 +195,7 @@ class CarState(CarStateBase):
       ("CGW4", 5),
       ("WHL_SPD11", 50),
       ("SAS11", 100),
+      ("TCU_DCT13", 100),
     ]
 
     if not CP.openpilotLongitudinalControl:

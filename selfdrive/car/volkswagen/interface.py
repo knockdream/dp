@@ -2,6 +2,7 @@ from cereal import car
 from selfdrive.car.volkswagen.values import CAR, BUTTON_STATES, CANBUS, NetworkLocation, TransmissionType, GearShifter
 from selfdrive.car import STD_CARGO_KG, scale_rot_inertia, scale_tire_stiffness, gen_empty_fingerprint
 from selfdrive.car.interfaces import CarInterfaceBase
+from common.dp_common import common_interface_atl, common_interface_get_params_lqr
 
 EventName = car.CarEvent.EventName
 
@@ -19,6 +20,15 @@ class CarInterface(CarInterfaceBase):
     else:
       self.ext_bus = CANBUS.cam
       self.cp_ext = self.cp_cam
+
+    # timebomb_counter mod
+    self.cruise_enabled_prev = False
+    self.timebomb_counter = 0
+    self.wheel_grabbed = False
+    self.timebomb_bypass_counter = 0
+
+    # dp addition - Alias Extended CAN parser to PT/CAM parser, based on detected network location
+    self.cp_ext = self.cp if CP.networkLocation == NetworkLocation.fwdCamera else self.cp_cam
 
   @staticmethod
   def compute_gb(accel, speed):
@@ -47,6 +57,13 @@ class CarInterface(CarInterfaceBase):
         ret.networkLocation = NetworkLocation.gateway
       else:  # We're wired to the LKAS camera
         ret.networkLocation = NetworkLocation.fwdCamera
+
+      # dp addition
+      if 0xfd in fingerprint[1]:  # ESP_21 present on bus 1, we're hooked up at the CAN gateway
+        ret.networkLocation = NetworkLocation.gateway
+      else:  # We're hooked up at the LKAS camera
+        ret.networkLocation = NetworkLocation.fwdCamera
+      cloudlog.info("Detected network location: %s", ret.networkLocation)
 
     # Global tuning defaults, can be overridden per-vehicle
 
@@ -132,11 +149,13 @@ class CarInterface(CarInterfaceBase):
     ret.centerToFront = ret.wheelbase * 0.45
     ret.tireStiffnessFront, ret.tireStiffnessRear = scale_tire_stiffness(ret.mass, ret.wheelbase, ret.centerToFront,
                                                                          tire_stiffness_factor=tire_stiffness_factor)
+    # dp
+    ret = common_interface_get_params_lqr(ret)
 
     return ret
 
   # returns a car.CarState
-  def update(self, c, can_strings):
+  def update(self, c, can_strings, dragonconf):
     buttonEvents = []
 
     # Process the most recent CAN message traffic, and check for validity
@@ -146,6 +165,9 @@ class CarInterface(CarInterfaceBase):
     self.cp_cam.update_strings(can_strings)
 
     ret = self.CS.update(self.cp, self.cp_cam, self.cp_ext, self.CP.transmissionType)
+    # dp
+    self.dragonconf = dragonconf
+    ret.cruiseState.enabled = common_interface_atl(ret, dragonconf.dpAtl)
     ret.canValid = self.cp.can_valid and self.cp_cam.can_valid
     ret.steeringRateLimited = self.CC.steer_rate_limited if self.CC is not None else False
 
@@ -170,10 +192,42 @@ class CarInterface(CarInterfaceBase):
     if self.CS.parkingBrakeSet:
       events.add(EventName.parkBrake)
 
+    # Engagement and longitudinal control using stock ACC. Make sure OP is
+    # disengaged if stock ACC is disengaged.
+    if not ret.cruiseState.enabled:
+      events.add(EventName.pcmDisable)
+    # Attempt OP engagement only on rising edge of stock ACC engagement.
+    elif not self.cruise_enabled_prev:
+      events.add(EventName.pcmEnable)
+
+    if dragonconf.dpVwTimebombAssist:
+      ret.stopSteering = False
+      if ret.cruiseState.enabled:
+        self.timebomb_counter += 1
+      else:
+        self.timebomb_counter = 0
+        self.timebomb_bypass_counter = 0
+
+      if self.timebomb_counter >= 33000: # 330*100 time in seconds until counter threshold for timebombWarn alert
+        if not self.wheel_grabbed:
+          events.add(EventName.timebombWarn)
+        if self.wheel_grabbed or ret.steeringPressed:
+          self.wheel_grabbed = True
+          ret.stopSteering = True
+          self.timebomb_bypass_counter += 1
+          if self.timebomb_bypass_counter >= 300: # 3*100 time alloted for bypass
+            self.wheel_grabbed = False
+            self.timebomb_counter = 0
+            self.timebomb_bypass_counter = 0
+            events.add(EventName.timebombBypassed)
+          else:
+            events.add(EventName.timebombBypassing)
+
     ret.events = events.to_msg()
     ret.buttonEvents = buttonEvents
 
     # update previous car states
+    self.cruise_enabled_prev = ret.cruiseState.enabled
     self.displayMetricUnitsPrev = self.CS.displayMetricUnits
     self.buttonStatesPrev = self.CS.buttonStates.copy()
 
@@ -186,6 +240,7 @@ class CarInterface(CarInterfaceBase):
                    c.hudControl.leftLaneVisible,
                    c.hudControl.rightLaneVisible,
                    c.hudControl.leftLaneDepart,
-                   c.hudControl.rightLaneDepart)
+                   c.hudControl.rightLaneDepart,
+                               self.dragonconf)
     self.frame += 1
     return can_sends

@@ -92,6 +92,9 @@ class CarState(CarStateBase):
     self.cam_lkas = cp_cam.vl["CAM_LKAS"]
     ret.steerError = cp_cam.vl["CAM_LKAS"]["ERR_BIT_1"] == 1
 
+    # dp - brake lights
+    ret.brakeLights = ret.brakePressed
+
     return ret
 
   @staticmethod

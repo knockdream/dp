@@ -394,3 +394,6 @@ class Android(HardwareBase):
 
   def get_networks(self):
     return None
+
+  def led(self, on=False):
+    pass

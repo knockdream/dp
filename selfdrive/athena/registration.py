@@ -11,7 +11,7 @@ from common.spinner import Spinner
 from common.file_helpers import mkdirs_exists_ok
 from common.basedir import PERSIST
 from selfdrive.controls.lib.alertmanager import set_offroad_alert
-from selfdrive.hardware import HARDWARE
+from selfdrive.hardware import HARDWARE, JETSON
 from selfdrive.swaglog import cloudlog
 
 
@@ -20,6 +20,10 @@ UNREGISTERED_DONGLE_ID = "UnregisteredDevice"
 
 def register(show_spinner=False) -> str:
   params = Params()
+  if not params.get_bool('dp_reg') or params.get_bool('dp_jetson'):
+    return UNREGISTERED_DONGLE_ID
+  if JETSON:
+    return UNREGISTERED_DONGLE_ID
   params.put("SubscriberInfo", HARDWARE.get_subscriber_info())
 
   IMEI = params.get("IMEI", encoding='utf8')
