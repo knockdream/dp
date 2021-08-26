@@ -49,7 +49,7 @@ class CarState(CarStateBase):
     ret.gasPressed = ret.gas > 0
     ret.brake = pt_cp.vl["ESP_05"]["ESP_Bremsdruck"] / 250.0  # FIXME: this is pressure in Bar, not sure what OP expects
     ret.brakePressed = bool(pt_cp.vl["ESP_05"]["ESP_Fahrer_bremst"])
-    ret.brakeLights = bool(pt_cp.vl["ESP_05"]['ESP_Status_Bremsdruck'])
+    ret.brakeLights = bool(pt_cp.vl["ESP_05"]['ESP_Status_Bremsdruck']) or ret.brakePressed
 
     # Update gear and/or clutch position data.
     if trans_type == TransmissionType.automatic:
@@ -261,7 +261,7 @@ class CarState(CarStateBase):
         signals += MqbExtraSignals.bsm_radar_signals
         checks += MqbExtraSignals.bsm_radar_checks
 
-    return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, CANBUS.cam, enforce_checks=False)
+    return CANParser(DBC_FILES.mqb, signals, checks, CANBUS.cam)
 
 class MqbExtraSignals:
   # Additional signal and message lists for optional or bus-portable controllers

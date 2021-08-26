@@ -27,9 +27,6 @@ class CarInterface(CarInterfaceBase):
     self.wheel_grabbed = False
     self.timebomb_bypass_counter = 0
 
-    # dp addition - Alias Extended CAN parser to PT/CAM parser, based on detected network location
-    self.cp_ext = self.cp if CP.networkLocation == NetworkLocation.fwdCamera else self.cp_cam
-
   @staticmethod
   def compute_gb(accel, speed):
     return float(accel) / 4.0
@@ -57,13 +54,6 @@ class CarInterface(CarInterfaceBase):
         ret.networkLocation = NetworkLocation.gateway
       else:  # We're wired to the LKAS camera
         ret.networkLocation = NetworkLocation.fwdCamera
-
-      # dp addition
-      if 0xfd in fingerprint[1]:  # ESP_21 present on bus 1, we're hooked up at the CAN gateway
-        ret.networkLocation = NetworkLocation.gateway
-      else:  # We're hooked up at the LKAS camera
-        ret.networkLocation = NetworkLocation.fwdCamera
-      cloudlog.info("Detected network location: %s", ret.networkLocation)
 
     # Global tuning defaults, can be overridden per-vehicle
 
