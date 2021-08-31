@@ -37,7 +37,7 @@ else:
     "-DPANDA",
   ]
 
-  if FindFile('dp_vw', '/data/params/d') != None:
+  if FindFile('dp_vw_panda', '/data/params/d') != None:
     with open('/data/params/d/dp_vw_panda') as f:
       if (int(f.read().strip())) == 1:
         PROJECT_FLAGS += ['-Dvw']
