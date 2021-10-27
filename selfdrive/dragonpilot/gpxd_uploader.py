@@ -8,25 +8,6 @@ UPLOAD_ATTR_NAME = 'user.upload'
 UPLOAD_ATTR_VALUE = b'1'
 LOG_PATH = '/data/media/0/gpx_logs/'
 
-# CLIENT_ID = 'HQqln0zhuGhrNcIan3t9wnD2PLhxJpiMgU9pU6ShRyg'
-# CLIENT_SECRET = 'PiTTk4p4LuYyRkBrDVEvxK-9hASzWS2Dm4wEip8wNyY'
-
-# AUTH_URL = 'https://www.openstreetmap.org/oauth2/authorize'
-# TOKEN_URL = 'https://www.openstreetmap.org/oauth2/token'
-# REDIRECT_URL = 'urn:ietf:wg:oauth:2.0:oob'
-#
-# auth = AUTH_URL + "?response_type=code&client_id=" + CLIENT_ID + "&redirect_uri=" + REDIRECT_URL + "&scope=write_gpx"
-# token_data = {
-#     'grant_type': 'authorization_code',
-#     'code': 'Pe7FyB_CP7WqDSf87UUCy-a6oszMYMI0NHfTEPjI0GA',
-#     'redirect_uri': REDIRECT_URL
-# }
-#
-# def auth():
-#   print(auth) # open in url, then change the code in token_data
-#   r = requests.post(TOKEN_URL, data=token_data, verify=False, allow_redirects=False, auth=(CLIENT_ID, CLIENT_SECRET))
-#   print(r.json())
-
 API_HEADER = {'Authorization': 'Bearer hP-9KYISopPxfMMyfaER1jOuyRtTCK4RPjSaZiwyWA8'}
 VERSION_URL = 'https://api.openstreetmap.org/api/versions'
 UPLOAD_URL = 'https://api.openstreetmap.org/api/0.6/gpx/create'
